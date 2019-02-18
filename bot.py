@@ -40,6 +40,8 @@ def prepare_data_for_answer(data):
         'chat_id': get_chat_id(data),
         'text': answer,
     }
+    
+    return json_data
 
 @post('/')
 def main():
