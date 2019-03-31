@@ -19,26 +19,7 @@ EVENT_END_TIME = config.BotInfo.EVENT_END_TIME
 SHEET_CREDS =config.BotInfo.SHEET_CREDS
 SHEET_ID = config.BotInfo.SHEET_ID
 
-AGENT_STATS_DATA = {
-    'username': {
-        'chat-id': '',
-        'faction': '',
-        'start': {
-            'level':15,
-            'ap': 24000000,
-            'trekker': 893,
-            'stats_img': False,
-            'updated': False
-        },
-        'end': {
-            'level':15,
-            'ap': 24000000,
-            'trekker': 893,
-            'stats_img': False,
-            'updated': False
-        }
-    }
-}
+AGENT_STATS_DATA = dict()
 
 locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 
@@ -74,12 +55,12 @@ def get_url(bot_url, method):
 def set_faction(username, faction):
     if 'res' in faction or 'resistance' in faction:
         AGENT_STATS_DATA[username]['faction'] = 'RES'
-        response_text = "*AGENT @{0},*\n\nYour Faction alignment is set to *Resistance*.".format(username)
+        response_text = "Your Faction alignment is set to *Resistance*."
     elif 'enl' in faction or 'enlightened' in faction:
         AGENT_STATS_DATA[username]['faction'] = 'ENL'
-        response_text = "*AGENT @{0},*\n\nYour Faction alignment is set to *Enlightened*.".format(username)
+        response_text = "Your Faction alignment is set to *Enlightened*."
     else:
-        response_text = "*AGENT @{0},*\n\nYour Faction alignment wasn't able to be recognized. Please try to set your Faction using:\n\t\t\t`/faction Resistance`\n\t\t\t`/faction Enlightened`".format(username)
+        response_text = "Your Faction alignment wasn't able to be recognized. Please try to set your Faction using:\n\t\t\t`/faction Resistance`\n\t\t\t`/faction Enlightened`"
     print('AGENT STATS :{}'.format(AGENT_STATS_DATA))
 
     return response_text
@@ -151,7 +132,7 @@ def update_sheet(username,faction, state, data):
             response_text = "Successfully Saved {0} state...!!!".format(state) if result['updatedCells'] == len(values[0]) else "{0} state Saving was unsuccessful...!!!".format(state)
             AGENT_STATS_DATA[username]['end']['saved'] = row
         else:
-            response_text = "Some Error Occurred...!!!  Contact *@NaNDuzIRa* for more Info:"
+            response_text = "Some Error Occurred...!!!  Contact *@NaNDuzIRa* for any queries:"
     else:
         response_text = "Seems like data is already saved for {0} Stats".format(state)
 
@@ -159,7 +140,7 @@ def update_sheet(username,faction, state, data):
 
 def save_stat(username):
     if 'faction' not in AGENT_STATS_DATA[username]:
-        return "*AGENT @{0},*\n\nYour Faction alignment wasn't able to be recognized. Please try to set your Faction using:\n\t\t\t`/faction Resistance`\n\t\t\t`/faction Enlightened`".format(username)
+        return "Your Faction alignment wasn't able to be recognized. Please try to set your Faction using:\n\t\t\t`/faction Resistance`\n\t\t\t`/faction Enlightened`"
 
     if not AGENT_STATS_DATA[username]['start']['saved']:
         if all(k in AGENT_STATS_DATA[username]['start'] for k in ('ap','level','trekker')):
@@ -175,28 +156,32 @@ def save_stat(username):
                 return "A _Screenshot_ of your *Agent-Stats* from *Scanner [REDACTED]* App is needed by the Bot for verification purpose.\n\nPlease send the same using the *Share button* in Agent Tab of Scanner [REDACTED] App."
             response_text = update_sheet(username, AGENT_STATS_DATA[username]['faction'], 'end', AGENT_STATS_DATA[username]['end'])
     else:
-        response_text = "Both Start & End Stats are saved. Good work Agent....!!!. Contact *@NaNDuzIRa* for more Info:"
+        response_text = "Both Start & End Stats are saved. Good work Agent....!!!. Contact *@NaNDuzIRa* for any queries:"
     
     return response_text
 
+def reset_stats(username):
+    if not AGENT_STATS_DATA[username]['start']['saved']:
+        AGENT_STATS_DATA[username]['start'].pop('level')
+        AGENT_STATS_DATA[username]['start'].pop('ap')
+        AGENT_STATS_DATA[username]['start'].pop('trekker')
+        AGENT_STATS_DATA[username]['start']['stats-img'] = False
+        response_text = "Your Starting Stats have been reset...!!!"
+    elif not AGENT_STATS_DATA[username]['end']['saved']:
+        AGENT_STATS_DATA[username]['end'].pop('level')
+        AGENT_STATS_DATA[username]['end'].pop('ap')
+        AGENT_STATS_DATA[username]['end'].pop('trekker')
+        AGENT_STATS_DATA[username]['end']['stats-img'] = False
+        response_text = "Your Ending Stats have been reset...!!!"
+    else:
+        response_text = "Both Start & End Stats are saved. Good work Agent....!!!. Contact *@NaNDuzIRa* for any queries:"
 
-def process_text(username, chat_id, text):
-    if username not in AGENT_STATS_DATA:
-        AGENT_STATS_DATA[username] = {
-            'chat-id': chat_id,
-            'start': {
-                'stats-img': False,
-                'saved': False
-            },
-            'end': {
-                'stats-img': False,
-                'saved': False
-            }
-        }
+    return response_text
+
+def process_text(username, text):
     if text.startswith('/start'):
         response_text = "*Welcome Agent @{0},*\n\n#IngressFS Stats Bot will help you guide through your registration process for *{1}*. Now has a first step, Set your Faction using:\n\t\t\t`/faction Resistance`\n\t\t\t`/faction Enlightened`".format(username, EVENT_TITLE)
     elif text.startswith('/faction'):
-        set_faction(username, text.lower())
         response_text = set_faction(username, text.lower())
     elif '/level' in text:
         response_text = set_stat(username, 'level', text.lower())
@@ -209,7 +194,7 @@ def process_text(username, chat_id, text):
     elif '/save' in text:
         response_text = save_stat(username)
     elif '/reset' in text:
-        response_text = "Reset Received"
+        response_text = reset_stats(username)
     elif '/results' in text:
         response_text = "Results Received"
     elif '/help' in text:
@@ -220,13 +205,26 @@ def process_text(username, chat_id, text):
     return response_text
 
 def process_message(message):
-    data = dict()
-    data["chat_id"] = message["from"]["id"]
-    data['parse_mode'] = "Markdown"
+    data = {
+        'chat-id': message["from"]["id"],
+        'parse_mode': 'Markdown'
+    }
+    if message['chat']['username'] not in AGENT_STATS_DATA:
+        AGENT_STATS_DATA[message['chat']['username']] = {
+            'chat-id': message["from"]["id"],
+            'start': {
+                'stats-img': False,
+                'saved': False
+            },
+            'end': {
+                'stats-img': False,
+                'saved': False
+            }
+        }
 
     if datetime.now() >= EVENT_START_TIME:
         if 'text' in message:
-            data['text'] = process_text(message['chat']['username'], message["from"]["id"], message['text'])
+            data['text'] = process_text(message['chat']['username'], message['text'])
         elif 'photo' in message:
             AGENT_STATS_DATA[message['chat']['username']]['start']['stats-img'] = AGENT_STATS_DATA[message['chat']['username']]['end']['stats-img'] = True
             data['text'] = "Bot currently is not able to recognize Compressed Images properly.\nPlease send the same has a file without any sort of Compression...!!!"
