@@ -9,7 +9,8 @@ import time
 
 INPUT_DIR = '../Assets/'
 OUTPUT_DIR = '../Results/'
-REGEX = [r'LVL\s?\d{0,2}', r'[\d,]+\s?[AaPp]{2}', r'Distance[\s]+Walked[\s]+[\d,]+\s?[A-z]{2}']
+# REGEX = [r'LVL\s?\d{0,2}', r'[\d,]+\s?[AaPp]{2}', r'Distance[\s]+Walked[\s]+[\d,]+\s?[A-z]{2}']
+REGEX = [r'.+']
 QUEUE = list()
 CROP_AREA = [0, 0, 0, 0]
 
