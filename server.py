@@ -181,8 +181,41 @@ def reset_stats(username):
 
     return response_text
 
-def set_agent_stats_ss(username):
-    pass
+def get_file(username, photo=None, document=None):
+    if photo:
+        file_detail = max(photo, key=lambda x:x['file_size'])
+        file_name = f"{BCKP_DIR}photo_{username}_{datetime.now().strftime('%Y_%m_%d-%H_%M_%S')}"
+    elif document:
+        file_detail = document
+        file_name = f"{BCKP_DIR}file_{username}_{datetime.now().strftime('%Y_%m_%d-%H_%M_%S')}"
+
+    msg_url = BOT_URL.format(AUTH_TOKEN, 'getFile')
+    res = requests.get(msg_url, json=file_detail)
+    json_data = json.loads(res.content)
+    if json_data.get('ok', None) == True:
+        file_name += f".{json_data['result']['file_path'].rsplit('.',1)[-1]}"
+        file_url = BOT_FILE_URL.format(AUTH_TOKEN, json_data['result']['file_path'])
+        res = requests.get(file_url, allow_redirects=True)
+        open(file_name, 'wb').write(res.content)
+
+        if photo:
+            response_text = "Bot currently is not able to recognize Compressed Images properly.\nPlease send the same has a file without any sort of Compression...!!!"
+        elif document:
+            response_text = "Received Agent-Stats Successfully."
+            if not AGENT_STATS_DATA[username]['start']['stats-img']:
+                AGENT_STATS_DATA[username]['start']['stats-img'] = True
+            elif not AGENT_STATS_DATA[username]['end']['stats-img']:
+                if datetime.now() <= EVENT_END_TIME:
+                    return "Event have not been ended yet. *#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+                AGENT_STATS_DATA[username]['end']['stats-img'] = True
+            else:
+                response_text = "Agent-Stats is set for Start & End already."
+
+
+    else:
+        response_text = "Error fetching File from Server....!!!"
+
+    return response_text
 
 def process_text(username, text):
     if text.startswith('/start'):
@@ -232,8 +265,9 @@ def process_message(message):
         if 'text' in message:
             data['text'] = process_text(message['chat']['username'], message['text'])
         elif 'photo' in message:
-            AGENT_STATS_DATA[message['chat']['username']]['start']['stats-img'] = AGENT_STATS_DATA[message['chat']['username']]['end']['stats-img'] = True
-            data['text'] = "Bot currently is not able to recognize Compressed Images properly.\nPlease send the same has a file without any sort of Compression...!!!"
+            data['text'] = get_file(message['chat']['username'], photo=message['photo'])
+        elif 'document' in message:
+            data['text'] = get_file(message['chat']['username'], document=message['document'])
         else:
             data['text'] = "Unrecognized Content....!!!. Please follow the basic steps suggested by the Bot.\n\nFor more info try out the /help command"
     else:
