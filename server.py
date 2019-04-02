@@ -3,6 +3,7 @@ import threading
 from flask import Flask, request
 from datetime import datetime
 import locale
+import json
 
 import config
 from spreadsheet import Spreadsheet
@@ -61,7 +62,6 @@ def set_faction(username, faction):
         response_text = "Your Faction alignment is set to *Enlightened*."
     else:
         response_text = "Your Faction alignment wasn't able to be recognized. Please try to set your Faction using:\n\t\t\t`/faction Resistance`\n\t\t\t`/faction Enlightened`"
-    print('AGENT STATS :{}'.format(AGENT_STATS_DATA))
 
     return response_text
 
@@ -73,14 +73,17 @@ def set_stat(username, stat_name, stat_val):
             response_text = "Your Starting {0} is set to {1}".format(stat_name, locale.format('%d', AGENT_STATS_DATA[username]['start'][stat_name], grouping=True))
         else:
             response_text = "Your Starting {0} wasn't able to be recognized. Please try to set your {0} using:\n\t\t\t`/{0} ##`".format(stat_name)
-    elif datetime.now() >= EVENT_END_TIME and not AGENT_STATS_DATA[username]['end']['saved']:
+    elif not AGENT_STATS_DATA[username]['end']['saved']:
+        if datetime.now() <= EVENT_END_TIME:
+            return "Event have not been ended yet. *#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+
         if val.isdigit():
             AGENT_STATS_DATA[username]['end'][stat_name] = int(val)
             response_text = "Your Ending {0} is set to {1}".format(stat_name, locale.format('%d', AGENT_STATS_DATA[username]['end'][stat_name], grouping=True))
         else:
             response_text = "Your Ending {0} wasn't able to be recognized. Please try to set your {0} using:\n\t\t\t`/{0} ##`".format(stat_name)
     else:
-        response_text = "Event have not been ended yet. *#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+        response_text = "Both Start & End Stats are saved. Good work Agent....!!!. Contact @NaNDuzIRa for any queries:"
     
     return response_text
 
@@ -156,62 +159,65 @@ def save_stat(username):
                 return "A _Screenshot_ of your *Agent-Stats* from *Scanner [REDACTED]* App is needed by the Bot for verification purpose.\n\nPlease send the same using the *Share button* in Agent Tab of Scanner [REDACTED] App."
             response_text = update_sheet(username, AGENT_STATS_DATA[username]['faction'], 'end', AGENT_STATS_DATA[username]['end'])
     else:
-        response_text = "Both Start & End Stats are saved. Good work Agent....!!!. Contact *@NaNDuzIRa* for any queries:"
+        response_text = "Both Start & End Stats are saved. Good work Agent....!!!. Contact @NaNDuzIRa for any queries:"
     
     return response_text
 
 def reset_stats(username):
     if not AGENT_STATS_DATA[username]['start']['saved']:
-        AGENT_STATS_DATA[username]['start'].pop('level')
-        AGENT_STATS_DATA[username]['start'].pop('ap')
-        AGENT_STATS_DATA[username]['start'].pop('trekker')
+        AGENT_STATS_DATA[username]['start'].pop('level',None)
+        AGENT_STATS_DATA[username]['start'].pop('ap',None)
+        AGENT_STATS_DATA[username]['start'].pop('trekker',None)
         AGENT_STATS_DATA[username]['start']['stats-img'] = False
         response_text = "Your Starting Stats have been reset...!!!"
     elif not AGENT_STATS_DATA[username]['end']['saved']:
-        AGENT_STATS_DATA[username]['end'].pop('level')
-        AGENT_STATS_DATA[username]['end'].pop('ap')
-        AGENT_STATS_DATA[username]['end'].pop('trekker')
+        AGENT_STATS_DATA[username]['end'].pop('level',None)
+        AGENT_STATS_DATA[username]['end'].pop('ap',None)
+        AGENT_STATS_DATA[username]['end'].pop('trekker',None)
         AGENT_STATS_DATA[username]['end']['stats-img'] = False
         response_text = "Your Ending Stats have been reset...!!!"
     else:
-        response_text = "Both Start & End Stats are saved. Good work Agent....!!!. Contact *@NaNDuzIRa* for any queries:"
+        response_text = "Both Start & End Stats are saved. Good work Agent....!!!. Contact @NaNDuzIRa for any queries:"
 
     return response_text
+
+def set_agent_stats_ss(username):
+    pass
 
 def process_text(username, text):
     if text.startswith('/start'):
         response_text = "*Welcome Agent @{0},*\n\n#IngressFS Stats Bot will help you guide through your registration process for *{1}*. Now has a first step, Set your Faction using:\n\t\t\t`/faction Resistance`\n\t\t\t`/faction Enlightened`".format(username, EVENT_TITLE)
     elif text.startswith('/faction'):
         response_text = set_faction(username, text.lower())
-    elif '/level' in text:
+    elif text.startswith('/level'):
         response_text = set_stat(username, 'level', text.lower())
-    elif '/ap' in text:
+    elif text.startswith('/ap'):
         response_text = set_stat(username, 'ap', text.lower())
-    elif '/trekker' in text:
+    elif text.startswith('/trekker'):
         response_text = set_stat(username, 'trekker', text.lower())
-    elif '/info' in text:
+    elif text.startswith('/info'):
         response_text = get_info(username)
-    elif '/save' in text:
+    elif text.startswith('/save'):
         response_text = save_stat(username)
-    elif '/reset' in text:
+    elif text.startswith('/reset'):
         response_text = reset_stats(username)
-    elif '/results' in text:
+    elif text.startswith('/results'):
         response_text = "Results Received"
-    elif '/help' in text:
+    elif text.startswith('/help'):
         response_text = "Help Received"
     else:
-        response_text = "*#IngressFS Stats Bot* ain't currently supporting communication with a Human Being..... ^_^"
+        response_text = "*#IngressFS Stats Bot* ain't currently supporting natural language communication with a Human Being...!!!"
     
     return response_text
 
 def process_message(message):
     data = {
-        'chat-id': message["from"]["id"],
+        'chat_id': message['chat']['id'],
         'parse_mode': 'Markdown'
     }
     if message['chat']['username'] not in AGENT_STATS_DATA:
         AGENT_STATS_DATA[message['chat']['username']] = {
-            'chat-id': message["from"]["id"],
+            'chat-id': data['chat_id'],
             'start': {
                 'stats-img': False,
                 'saved': False
@@ -232,19 +238,25 @@ def process_message(message):
             data['text'] = "Unrecognized Content....!!!. Please follow the basic steps suggested by the Bot.\n\nFor more info try out the /help command"
     else:
         data['text'] = "Event have not been started yet. *#IngressFS Stats Bot* will be accepting Stats at {0}".format(EVENT_START_TIME.strftime('%Y/%m/%d %H:%M:%S'))
-    print("DATA :{}".format(data))
+    print('AGENT STATS :{}'.format(json.dumps(AGENT_STATS_DATA,separators="':",indent="\t")))
+    print("DATA :{}".format(json.dumps(data,separators="':",indent="\t")))
     r = requests.post(get_url(BOT_URL, "sendMessage"), data=data)
 
-@app.route("/", methods=["POST"])
+@app.route('/IngressFS_Stats_bOt', methods=['POST'])
 def post_handler():
     if request.method == "POST":
         update = request.get_json()
-        print("UPDATE :{}".format(update))
+        print("UPDATE :{}".format(json.dumps(update,separators="':",indent="\t")))
 
-        if 'message' in update:
+        if isinstance(update, dict) and 'message' in update:
             process_message(update['message'])
+        else:
+            return "WRONG PLACE...!!! Move out of here."
         return "ok!", 200
 
+@app.route('/', methods=['POST','GET'])
+def get_lost():
+    return "GET LOST"
 
 if __name__ == '__main__':
 

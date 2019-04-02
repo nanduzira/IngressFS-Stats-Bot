@@ -6,7 +6,7 @@ import config
 BOT_URL = config.BotInfo.BOT_URL
 AUTH_TOKEN = config.BotInfo.AUTH_TOKEN
 
-test_url = 'https://ingressfs-stat.serveo.net'
+test_url = 'https://ingressfs-stat.serveo.net/IngressFS_Stats_bOt'
 
 def get_url(method):
     return BOT_URL.format(AUTH_TOKEN,method)
