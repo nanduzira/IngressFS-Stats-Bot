@@ -19,6 +19,7 @@ EVENT_END_TIME = config.BotInfo.EVENT_END_TIME
 
 SHEET_CREDS =config.BotInfo.SHEET_CREDS
 SHEET_ID = config.BotInfo.SHEET_ID
+SHEET_URL = config.BotInfo.SHEET_URL
 
 AGENT_STATS_DATA = dict()
 
@@ -29,12 +30,14 @@ sheet_fields = {
     'ENL': {
         'name': 'L{0}',
         'start': 'L{0}:O{1}',
-        'end': 'P{0}:R{1}'
+        'end': 'P{0}:R{1}',
+        'res': 'H{0}:J{1}'
     },
     'RES': {
         'name': 'A{0}',
         'start': 'A{0}:D{1}',
-        'end': 'E{0}:G{1}'
+        'end': 'E{0}:G{1}',
+        'res': 'S{0}:U{1}'
     }
 }
 app = Flask(__name__)
@@ -75,7 +78,7 @@ def set_stat(username, stat_name, stat_val):
             response_text = "Your Starting {0} wasn't able to be recognized. Please try to set your {0} using:\n\t\t\t`/{0} ##`".format(stat_name)
     elif not AGENT_STATS_DATA[username]['end']['saved']:
         if datetime.now() <= EVENT_END_TIME:
-            return "Event have not been ended yet. *#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+            return "Event have not been ended yet...!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
 
         if val.isdigit():
             AGENT_STATS_DATA[username]['end'][stat_name] = int(val)
@@ -150,14 +153,18 @@ def save_stat(username):
             if not AGENT_STATS_DATA[username]['start']['stats-img']:
                 return "A _Screenshot_ of your *Agent-Stats* from *Scanner [REDACTED]* App is needed by the Bot for verification purpose.\n\nPlease send the same using the *Share button* in Agent Tab of Scanner [REDACTED] App."
             response_text = update_sheet(username, AGENT_STATS_DATA[username]['faction'], 'start', AGENT_STATS_DATA[username]['start'])
+        else:
+            response_text = "Please provide all Start Stats(AP, LEVEL, TREKKER)"
     elif not AGENT_STATS_DATA[username]['end']['saved']:
         if datetime.now() <= EVENT_END_TIME:
-            return "Event have not been ended yet. *#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+            return "Event have not been ended yet....!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
         
         if all(k in AGENT_STATS_DATA[username]['end'] for k in ('ap','level','trekker')):
             if not AGENT_STATS_DATA[username]['end']['stats-img']:
                 return "A _Screenshot_ of your *Agent-Stats* from *Scanner [REDACTED]* App is needed by the Bot for verification purpose.\n\nPlease send the same using the *Share button* in Agent Tab of Scanner [REDACTED] App."
             response_text = update_sheet(username, AGENT_STATS_DATA[username]['faction'], 'end', AGENT_STATS_DATA[username]['end'])
+        else:
+            response_text = "Please provide all End Stats(AP, LEVEL, TREKKER)"
     else:
         response_text = "Both Start & End Stats are saved. Good work Agent....!!!. Contact @NaNDuzIRa for any queries:"
     
@@ -206,16 +213,34 @@ def get_file(username, photo=None, document=None):
                 AGENT_STATS_DATA[username]['start']['stats-img'] = True
             elif not AGENT_STATS_DATA[username]['end']['stats-img']:
                 if datetime.now() <= EVENT_END_TIME:
-                    return "Event have not been ended yet. *#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+                    return "Event have not been ended yet....!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
                 AGENT_STATS_DATA[username]['end']['stats-img'] = True
             else:
                 response_text = "Agent-Stats is set for Start & End already."
-
-
+                
     else:
-        response_text = "Error fetching File from Server....!!!"
+        response_text = "Error fetching File Details from Server....!!!"
 
     return response_text
+
+# def get_results(username):
+#     results = '*AGENT STATS RESULTS*\n\n\t\t_Agent Name :_ *@{0}*\n\t\t'.format(username)
+#     if datetime.now() <= EVENT_END_TIME:
+#         return "Event have not been ended yet....!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+#     elif not AGENT_STATS_DATA[username]['start']['saved'] or not AGENT_STATS_DATA[username]['end']['saved']:
+#         return "Both Start & End Stats is to be Saved before querying for Results."
+#     else:
+#         result_enl = stat_sheet.get_values(SHEET_ID,sheet_fields['ENL']['name'].format(21,70))
+#         if 'values' in result_enl:
+#             results_enl_dict = { 21+i:result_enl['values'][i] for i in range(0,len(result_enl['values'])) }
+#             level_row = max(results_enl_dict, key=lambda x:results_enl_dict[x][0])
+#             ap_row = max(results_enl_dict, key=lambda x:results_enl_dict[x][1])
+#             trekker_row = max(results_enl_dict, key=lambda x:results_enl_dict[x][2])
+
+            
+#         result_res = stat_sheet.get_values(SHEET_ID,sheet_fields['RES']['name'].format(21,70))
+
+
 
 def process_text(username, text):
     if text.startswith('/start'):
@@ -235,9 +260,9 @@ def process_text(username, text):
     elif text.startswith('/reset'):
         response_text = reset_stats(username)
     elif text.startswith('/results'):
-        response_text = "Results Received"
+        response_text = f"Visit the [#IngressFS Bengaluru, Scoring Spreadsheet - 6th April 2019]({SHEET_URL}) to view your Results"
     elif text.startswith('/help'):
-        response_text = "Help Received"
+        response_text = "Contact @NaNDuzIRa for more help"
     else:
         response_text = "*#IngressFS Stats Bot* ain't currently supporting natural language communication with a Human Being...!!!"
     
@@ -248,39 +273,42 @@ def process_message(message):
         'chat_id': message['chat']['id'],
         'parse_mode': 'Markdown'
     }
-    if message['chat']['username'] not in AGENT_STATS_DATA:
-        AGENT_STATS_DATA[message['chat']['username']] = {
-            'chat-id': data['chat_id'],
-            'start': {
-                'stats-img': False,
-                'saved': False
-            },
-            'end': {
-                'stats-img': False,
-                'saved': False
+    if 'username' in message['chat']:
+        if message['chat']['username'] not in AGENT_STATS_DATA:
+            AGENT_STATS_DATA[message['chat']['username']] = {
+                'chat-id': data['chat_id'],
+                'start': {
+                    'stats-img': False,
+                    'saved': False
+                },
+                'end': {
+                    'stats-img': False,
+                    'saved': False
+                }
             }
-        }
 
-    if datetime.now() >= EVENT_START_TIME:
-        if 'text' in message:
-            data['text'] = process_text(message['chat']['username'], message['text'])
-        elif 'photo' in message:
-            data['text'] = get_file(message['chat']['username'], photo=message['photo'])
-        elif 'document' in message:
-            data['text'] = get_file(message['chat']['username'], document=message['document'])
+        if datetime.now() >= EVENT_START_TIME:
+            if 'text' in message:
+                data['text'] = process_text(message['chat']['username'], message['text'])
+            elif 'photo' in message:
+                data['text'] = get_file(message['chat']['username'], photo=message['photo'])
+            elif 'document' in message:
+                data['text'] = get_file(message['chat']['username'], document=message['document'])
+            else:
+                data['text'] = "Unrecognized Content....!!!. Please follow the basic steps suggested by the Bot.\n\nFor more info try out the /help command"
         else:
-            data['text'] = "Unrecognized Content....!!!. Please follow the basic steps suggested by the Bot.\n\nFor more info try out the /help command"
+            data['text'] = "Event have not been started yet....!!!\n\n*#IngressFS Stats Bot* will be accepting Stats at {0}".format(EVENT_START_TIME.strftime('%Y/%m/%d %H:%M:%S'))
     else:
-        data['text'] = "Event have not been started yet. *#IngressFS Stats Bot* will be accepting Stats at {0}".format(EVENT_START_TIME.strftime('%Y/%m/%d %H:%M:%S'))
-    print('AGENT STATS :{}'.format(json.dumps(AGENT_STATS_DATA,separators="':",indent="\t")))
-    print("DATA :{}".format(json.dumps(data,separators="':",indent="\t")))
+        data['text'] = "Please set your Username in Telegram Settings has Agent Name to continue...!!!"
+    # print('AGENT STATS :{}'.format(json.dumps(AGENT_STATS_DATA,separators="':",indent="\t")))
+    # print("DATA :{}".format(json.dumps(data,separators="':",indent="\t")))
     r = requests.post(get_url(BOT_URL, "sendMessage"), data=data)
 
 @app.route('/IngressFS_Stats_bOt', methods=['POST'])
 def post_handler():
     if request.method == "POST":
         update = request.get_json()
-        print("UPDATE :{}".format(json.dumps(update,separators="':",indent="\t")))
+        # print("UPDATE :{}".format(json.dumps(update,separators="':",indent="\t")))
 
         if isinstance(update, dict) and 'message' in update:
             process_message(update['message'])
