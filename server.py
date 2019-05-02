@@ -81,7 +81,7 @@ def set_stat(username, stat_name, stat_val):
             response_text = "Your Starting {0} wasn't able to be recognized. Please try to set your {0} using:\n\t\t\t`/{0} ##`".format(stat_name)
     elif not AGENT_STATS_DATA[username]['end']['saved']:
         if datetime.now() <= EVENT_END_TIME:
-            return "Event have not been ended yet...!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(LOCAL_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+            return "Event have not been ended yet...!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(LOCAL_END_TIME.strftime('%d %b, %Y %I:%M%p'))
 
         if val.isdigit():
             AGENT_STATS_DATA[username]['end'][stat_name] = int(val)
@@ -160,7 +160,7 @@ def save_stat(username):
             response_text = "Please provide all Start Stats(AP, LEVEL, TREKKER)"
     elif not AGENT_STATS_DATA[username]['end']['saved']:
         if datetime.now() <= EVENT_END_TIME:
-            return "Event have not been ended yet....!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(LOCAL_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+            return "Event have not been ended yet....!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(LOCAL_END_TIME.strftime('%d %b, %Y %I:%M%p'))
 
         if all(k in AGENT_STATS_DATA[username]['end'] for k in ('ap','level','trekker')):
             if not AGENT_STATS_DATA[username]['end']['stats-img']:
@@ -216,7 +216,7 @@ def get_file(username, photo=None, document=None):
                 AGENT_STATS_DATA[username]['start']['stats-img'] = True
             elif not AGENT_STATS_DATA[username]['end']['stats-img']:
                 if datetime.now() <= EVENT_END_TIME:
-                    return "Event have not been ended yet....!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(LOCAL_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+                    return "Event have not been ended yet....!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(LOCAL_END_TIME.strftime('%d %b, %Y %I:%M%p'))
                 AGENT_STATS_DATA[username]['end']['stats-img'] = True
             else:
                 response_text = "Agent-Stats is set for Start & End already."
@@ -283,7 +283,7 @@ def process_message(message):
             else:
                 data['text'] = "Unrecognized Content....!!!. Please follow the basic steps suggested by the Bot.\n\nFor more info try out the /help command"
         else:
-            data['text'] = "Event have not been started yet....!!!\n\n*#IngressFS Stats Bot* will be accepting Stats at {0}".format(LOCAL_START_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+            data['text'] = "Event have not been started yet....!!!\n\n*#IngressFS Stats Bot* will be accepting Stats at {0}".format(LOCAL_START_TIME.strftime('%d %b, %Y %I:%M%p'))
     else:
         data['text'] = "Please set your Username in Telegram Settings has Agent Name to continue...!!!"
     # print('AGENT STATS :{}'.format(json.dumps(AGENT_STATS_DATA,separators="':",indent="\t")))
