@@ -211,7 +211,7 @@ def get_file(username, photo=None, document=None):
         if photo:
             response_text = "Bot currently is not able to recognize Compressed Images properly.\nPlease send the same has a file without any sort of Compression...!!!"
         elif document:
-            response_text = "Received Agent-Stats Successfully. Make sure you enter the stats manually for cross-checking & save it."
+            response_text = "Received Agent-Stats Image Successfully. Make sure you enter the stats manually for cross-checking & save it."
             if not AGENT_STATS_DATA[username]['start']['stats-img']:
                 AGENT_STATS_DATA[username]['start']['stats-img'] = True
             elif not AGENT_STATS_DATA[username]['end']['stats-img']:
@@ -246,7 +246,7 @@ def process_text(username, text):
     elif text.startswith('/reset'):
         response_text = reset_stats(username)
     elif text.startswith('/results'):
-        response_text = f"Visit the [#IngressFS Bengaluru, Scoring Spreadsheet - 6th April 2019]({SHEET_URL}) to view your Results"
+        response_text = f"Visit the [#IngressFS Bengaluru, Scoring Spreadsheet - 4th May 2019]({SHEET_URL}) to view your Results"
     elif text.startswith('/help'):
         response_text = "Contact @NaNDuzIRa for more help"
     else:
