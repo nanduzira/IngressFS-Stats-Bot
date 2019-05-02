@@ -1,7 +1,7 @@
 import requests
 import threading
 from flask import Flask, request
-from datetime import datetime
+from datetime import datetime, timedelta
 import locale
 import json
 
@@ -16,6 +16,9 @@ BCKP_DIR = config.BotInfo.BCKP_DIR
 EVENT_TITLE = config.BotInfo.EVENT_TITLE
 EVENT_START_TIME = config.BotInfo.EVENT_START_TIME
 EVENT_END_TIME = config.BotInfo.EVENT_END_TIME
+
+LOCAL_START_TIME = EVENT_START_TIME + timedelta(hours=5, minutes=30)
+LOCAL_END_TIME = EVENT_END_TIME + timedelta(hours=5, minutes=30)
 
 SHEET_CREDS =config.BotInfo.SHEET_CREDS
 SHEET_ID = config.BotInfo.SHEET_ID
@@ -78,7 +81,7 @@ def set_stat(username, stat_name, stat_val):
             response_text = "Your Starting {0} wasn't able to be recognized. Please try to set your {0} using:\n\t\t\t`/{0} ##`".format(stat_name)
     elif not AGENT_STATS_DATA[username]['end']['saved']:
         if datetime.now() <= EVENT_END_TIME:
-            return "Event have not been ended yet...!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+            return "Event have not been ended yet...!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(LOCAL_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
 
         if val.isdigit():
             AGENT_STATS_DATA[username]['end'][stat_name] = int(val)
@@ -157,7 +160,7 @@ def save_stat(username):
             response_text = "Please provide all Start Stats(AP, LEVEL, TREKKER)"
     elif not AGENT_STATS_DATA[username]['end']['saved']:
         if datetime.now() <= EVENT_END_TIME:
-            return "Event have not been ended yet....!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+            return "Event have not been ended yet....!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(LOCAL_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
         
         if all(k in AGENT_STATS_DATA[username]['end'] for k in ('ap','level','trekker')):
             if not AGENT_STATS_DATA[username]['end']['stats-img']:
@@ -213,7 +216,7 @@ def get_file(username, photo=None, document=None):
                 AGENT_STATS_DATA[username]['start']['stats-img'] = True
             elif not AGENT_STATS_DATA[username]['end']['stats-img']:
                 if datetime.now() <= EVENT_END_TIME:
-                    return "Event have not been ended yet....!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+                    return "Event have not been ended yet....!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(LOCAL_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
                 AGENT_STATS_DATA[username]['end']['stats-img'] = True
             else:
                 response_text = "Agent-Stats is set for Start & End already."
@@ -222,23 +225,6 @@ def get_file(username, photo=None, document=None):
         response_text = "Error fetching File Details from Server....!!!"
 
     return response_text
-
-# def get_results(username):
-#     results = '*AGENT STATS RESULTS*\n\n\t\t_Agent Name :_ *@{0}*\n\t\t'.format(username)
-#     if datetime.now() <= EVENT_END_TIME:
-#         return "Event have not been ended yet....!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(EVENT_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
-#     elif not AGENT_STATS_DATA[username]['start']['saved'] or not AGENT_STATS_DATA[username]['end']['saved']:
-#         return "Both Start & End Stats is to be Saved before querying for Results."
-#     else:
-#         result_enl = stat_sheet.get_values(SHEET_ID,sheet_fields['ENL']['name'].format(21,70))
-#         if 'values' in result_enl:
-#             results_enl_dict = { 21+i:result_enl['values'][i] for i in range(0,len(result_enl['values'])) }
-#             level_row = max(results_enl_dict, key=lambda x:results_enl_dict[x][0])
-#             ap_row = max(results_enl_dict, key=lambda x:results_enl_dict[x][1])
-#             trekker_row = max(results_enl_dict, key=lambda x:results_enl_dict[x][2])
-
-            
-#         result_res = stat_sheet.get_values(SHEET_ID,sheet_fields['RES']['name'].format(21,70))
 
 
 
@@ -297,7 +283,7 @@ def process_message(message):
             else:
                 data['text'] = "Unrecognized Content....!!!. Please follow the basic steps suggested by the Bot.\n\nFor more info try out the /help command"
         else:
-            data['text'] = "Event have not been started yet....!!!\n\n*#IngressFS Stats Bot* will be accepting Stats at {0}".format(EVENT_START_TIME.strftime('%Y/%m/%d %H:%M:%S'))
+            data['text'] = "Event have not been started yet....!!!\n\n*#IngressFS Stats Bot* will be accepting Stats at {0}".format(LOCAL_START_TIME.strftime('%Y/%m/%d %H:%M:%S'))
     else:
         data['text'] = "Please set your Username in Telegram Settings has Agent Name to continue...!!!"
     # print('AGENT STATS :{}'.format(json.dumps(AGENT_STATS_DATA,separators="':",indent="\t")))

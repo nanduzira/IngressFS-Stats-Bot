@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class DevConfig():
     """Development configuration"""
@@ -22,10 +22,10 @@ class BotInfo():
     AUTH_TOKEN = ''
     BCKP_DIR = 'Assets/'
 
-    EVENT_START_TIME = datetime.strptime('2019/04/06 15:55:00', '%Y/%m/%d %H:%M:%S')
-    EVENT_END_TIME = datetime.strptime('2019/04/06 18:00:00', '%Y/%m/%d %H:%M:%S')
-    EVENT_TITLE = "#IngressFS BLR, India April 2019"
+    EVENT_START_TIME = datetime.strptime('2019/05/04 15:55:00', '%Y/%m/%d %H:%M:%S') - timedelta(hours=5, minutes=30)
+    EVENT_END_TIME = datetime.strptime('2019/05/04 18:00:00', '%Y/%m/%d %H:%M:%S') - timedelta(hours=5, minutes=30)
+    EVENT_TITLE = "#IngressFS BLR, India May 2019"
 
     SHEET_CREDS = 'credentials.json'
-    SHEET_ID = '1qgC4J1JWng1Q01TjKPd5v9QydFZQWowEYsEhTZjIgS0'
+    SHEET_ID = '1hqtJU3TPPOt1QvlEa2eYpT_48HfP0gK8bcchAVGain4'
     SHEET_URL = f'https://docs.google.com/spreadsheets/d/{SHEET_ID}/'
