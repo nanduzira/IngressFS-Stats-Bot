@@ -47,9 +47,9 @@ app = Flask(__name__)
 app.config.from_object(config.DevConfig)
 
 def synchronized(func):
-	
+
     func.__lock__ = threading.Lock()
-		
+
     def synced_func(*args, **kws):
         with func.__lock__:
             return func(*args, **kws)
@@ -62,10 +62,10 @@ def get_url(bot_url, method):
 def set_faction(username, faction):
     if 'res' in faction or 'resistance' in faction:
         AGENT_STATS_DATA[username]['faction'] = 'RES'
-        response_text = "Your Faction alignment is set to *Resistance*."
+        response_text = f"Your Faction alignment is set to *{AGENT_STATS_DATA[username]['faction']}*."
     elif 'enl' in faction or 'enlightened' in faction:
         AGENT_STATS_DATA[username]['faction'] = 'ENL'
-        response_text = "Your Faction alignment is set to *Enlightened*."
+        response_text = f"Your Faction alignment is set to *{AGENT_STATS_DATA[username]['faction']}*."
     else:
         response_text = "Your Faction alignment wasn't able to be recognized. Please try to set your Faction using:\n\t\t\t`/faction Resistance`\n\t\t\t`/faction Enlightened`"
 
@@ -90,7 +90,7 @@ def set_stat(username, stat_name, stat_val):
             response_text = "Your Ending {0} wasn't able to be recognized. Please try to set your {0} using:\n\t\t\t`/{0} ##`".format(stat_name)
     else:
         response_text = "Both Start & End Stats are saved. Good work Agent....!!!. Contact @NaNDuzIRa for any queries:"
-    
+
     return response_text
 
 def get_info(username):
@@ -111,7 +111,7 @@ def get_info(username):
             else:
                 info += '_{0} {1} :_ *{2} {3}*\n\t\t'.format(state, key, locale.format('%d',val,grouping=True),
                     'Km' if 'trekker' in key else 'AP' if 'ap' in key else 'lvl')
-    
+
     return info
 
 @synchronized
@@ -161,7 +161,7 @@ def save_stat(username):
     elif not AGENT_STATS_DATA[username]['end']['saved']:
         if datetime.now() <= EVENT_END_TIME:
             return "Event have not been ended yet....!!!\n\n*#IngressFS Stats Bot* will accept Ending Stats at {0}".format(LOCAL_END_TIME.strftime('%Y/%m/%d %H:%M:%S'))
-        
+
         if all(k in AGENT_STATS_DATA[username]['end'] for k in ('ap','level','trekker')):
             if not AGENT_STATS_DATA[username]['end']['stats-img']:
                 return "A _Screenshot_ of your *Agent-Stats* from *Scanner [REDACTED]* App is needed by the Bot for verification purpose.\n\nPlease send the same using the *Share button* in Agent Tab of Scanner [REDACTED] App."
@@ -170,7 +170,7 @@ def save_stat(username):
             response_text = "Please provide all End Stats(AP, LEVEL, TREKKER)"
     else:
         response_text = "Both Start & End Stats are saved. Good work Agent....!!!. Contact @NaNDuzIRa for any queries:"
-    
+
     return response_text
 
 def reset_stats(username):
@@ -211,7 +211,7 @@ def get_file(username, photo=None, document=None):
         if photo:
             response_text = "Bot currently is not able to recognize Compressed Images properly.\nPlease send the same has a file without any sort of Compression...!!!"
         elif document:
-            response_text = "Received Agent-Stats Successfully."
+            response_text = "Received Agent-Stats Successfully. Make sure you enter the stats manually for cross-checking & save it."
             if not AGENT_STATS_DATA[username]['start']['stats-img']:
                 AGENT_STATS_DATA[username]['start']['stats-img'] = True
             elif not AGENT_STATS_DATA[username]['end']['stats-img']:
@@ -220,7 +220,7 @@ def get_file(username, photo=None, document=None):
                 AGENT_STATS_DATA[username]['end']['stats-img'] = True
             else:
                 response_text = "Agent-Stats is set for Start & End already."
-                
+
     else:
         response_text = "Error fetching File Details from Server....!!!"
 
@@ -251,7 +251,7 @@ def process_text(username, text):
         response_text = "Contact @NaNDuzIRa for more help"
     else:
         response_text = "*#IngressFS Stats Bot* ain't currently supporting natural language communication with a Human Being...!!!"
-    
+
     return response_text
 
 def process_message(message):
