@@ -22,10 +22,10 @@ class BotInfo():
     AUTH_TOKEN = ''
     BCKP_DIR = 'Assets/'
 
-    EVENT_START_TIME = datetime.strptime('2019/05/04 15:55:00', '%Y/%m/%d %H:%M:%S') - timedelta(hours=5, minutes=30)
-    EVENT_END_TIME = datetime.strptime('2019/05/04 18:00:00', '%Y/%m/%d %H:%M:%S') - timedelta(hours=5, minutes=30)
-    EVENT_TITLE = "#IngressFS BLR, India May 2019"
+    EVENT_START_TIME = datetime.strptime('2019/06/01 15:50:00', '%Y/%m/%d %H:%M:%S') - timedelta(hours=5, minutes=30)
+    EVENT_END_TIME = datetime.strptime('2019/06/01 18:00:00', '%Y/%m/%d %H:%M:%S') - timedelta(hours=5, minutes=30)
+    EVENT_TITLE = "#IngressFS BLR, India June 2019"
 
     SHEET_CREDS = 'credentials.json'
-    SHEET_ID = '1hqtJU3TPPOt1QvlEa2eYpT_48HfP0gK8bcchAVGain4'
+    SHEET_ID = '1Uqubcmdzq9mK7y4D0lj9N7diWSXd4FTxY0D61V89YN4'
     SHEET_URL = f'https://docs.google.com/spreadsheets/d/{SHEET_ID}/'
